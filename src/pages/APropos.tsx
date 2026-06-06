@@ -22,10 +22,10 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 
-import mourtalaImg from '../assets/images/talla.jpg';
-import seidouImg from '../assets/images/sei.jpg';
-import abdoulayeImg from '../assets/images/laye.jpg';
-import youKnowImg from '../assets/images/youknow.jpg';
+import mourtalaImg from '../assets/images/talla-1.jpg';
+import seidouImg from '../assets/images/sei-1.jpg';
+import abdoulayeImg from '../assets/images/laye-1.jpg';
+import youKnowImg from '../assets/images/youknow-1.jpg';
 
 interface AProposProps {
   onNavigate: (pageId: PageId) => void;
@@ -256,12 +256,18 @@ export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
                 <div className="flex justify-between items-start">
                   
                   {/* High Quality Portrait Avatar/Fallback Concept */}
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    referrerPolicy="no-referrer"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-[#00A3E0] bg-[#07152B] shrink-0 group-hover:scale-105 transition-transform shadow-md"
-                  />
+                  {member.image ? (
+                    <img 
+                      src={member.image} 
+                      alt={member.name} 
+                      referrerPolicy="no-referrer"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-[#00A3E0] bg-[#07152B] shrink-0 group-hover:scale-105 transition-transform shadow-md"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-[#07152B] text-[#00A3E0] font-sans font-bold text-2xl flex items-center justify-center border-2 border-[#00A3E0] shrink-0 group-hover:scale-105 transition-transform">
+                      {member.avatarLetters}
+                    </div>
+                  )}
 
                   <span className="bg-slate-100 text-slate-800 text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-0.5 rounded-full border border-slate-200">
                     {member.tag}
