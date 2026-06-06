@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageId } from './types';
 import { BrandLogo } from './components/BrandLogo';
 import { Accueil } from './pages/Accueil';
@@ -23,11 +23,68 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [activePage, setActivePage] = useState<PageId>('accueil');
+  const [activePage, setActivePage] = useState<PageId>(() => {
+    // 1. Try to get page from URL hash first
+    const hash = window.location.hash.replace('#', '') as PageId;
+    if (['accueil', 'services', 'apropos', 'contact'].includes(hash)) {
+      return hash;
+    }
+    // 2. Fallback to localStorage
+    const saved = localStorage.getItem('nerva_activePage');
+    if (saved && ['accueil', 'services', 'apropos', 'contact'].includes(saved)) {
+      return saved as PageId;
+    }
+    return 'accueil';
+  });
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  const [activeServiceTab, setActiveServiceTab] = useState<number>(0);
-  const [selectedContactService, setSelectedContactService] = useState<string>('web');
-  const [contactInitialMessage, setContactInitialMessage] = useState<string>('');
+
+  const [activeServiceTab, setActiveServiceTab] = useState<number>(() => {
+    const saved = localStorage.getItem('nerva_activeServiceTab');
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+
+  const [selectedContactService, setSelectedContactService] = useState<string>(() => {
+    const saved = localStorage.getItem('nerva_selectedContactService');
+    return saved || 'web';
+  });
+
+  const [contactInitialMessage, setContactInitialMessage] = useState<string>(() => {
+    const saved = localStorage.getItem('nerva_contactInitialMessage');
+    return saved || '';
+  });
+
+  // Effect to handle navigation via browser back / forward buttons (hashchange event)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as PageId;
+      if (['accueil', 'services', 'apropos', 'contact'].includes(hash)) {
+        setActivePage(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Sync state to localStorage & browser hash
+  useEffect(() => {
+    localStorage.setItem('nerva_activePage', activePage);
+    if (window.location.hash !== `#${activePage}`) {
+      window.location.hash = activePage;
+    }
+  }, [activePage]);
+
+  useEffect(() => {
+    localStorage.setItem('nerva_activeServiceTab', activeServiceTab.toString());
+  }, [activeServiceTab]);
+
+  useEffect(() => {
+    localStorage.setItem('nerva_selectedContactService', selectedContactService);
+  }, [selectedContactService]);
+
+  useEffect(() => {
+    localStorage.setItem('nerva_contactInitialMessage', contactInitialMessage);
+  }, [contactInitialMessage]);
 
   // Helper to change page seamlessly
   const handlePageChange = (pageId: PageId, options?: { serviceTab?: number; contactService?: string; contactMessage?: string }) => {
@@ -44,6 +101,8 @@ export default function App() {
       setContactInitialMessage('');
     }
     setMobileMenuOpen(false);
+    
+    // Smooth scroll to top, except if we are refreshing or history navigation
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

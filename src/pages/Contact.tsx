@@ -27,14 +27,37 @@ interface ContactProps {
 
 export const Contact: React.FC<ContactProps> = ({ selectedService, setSelectedService, initialMessage = '' }) => {
   // Form State
-  const [formData, setFormData] = React.useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    service: selectedService,
-    message: initialMessage
+  const [formData, setFormData] = React.useState(() => {
+    const saved = localStorage.getItem('nerva_contact_form');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          name: parsed.name || '',
+          email: parsed.email || '',
+          phone: parsed.phone || '',
+          company: parsed.company || '',
+          service: selectedService || parsed.service || 'web',
+          message: initialMessage || parsed.message || ''
+        };
+      } catch (e) {
+        // ignore
+      }
+    }
+    return {
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      service: selectedService,
+      message: initialMessage
+    };
   });
+
+  // Save changes to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('nerva_contact_form', JSON.stringify(formData));
+  }, [formData]);
 
   // Sync prop changes into local state
   React.useEffect(() => {
@@ -90,6 +113,7 @@ export const Contact: React.FC<ContactProps> = ({ selectedService, setSelectedSe
         service: selectedService,
         message: ''
       });
+      localStorage.removeItem('nerva_contact_form');
     } catch (error: any) {
       console.error(error);
       setIsSubmitting(false);
