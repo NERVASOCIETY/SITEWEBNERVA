@@ -11,15 +11,26 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Initialize Supabase Client
-  const supabaseUrl = process.env.SUPABASE_URL || "";
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn("WARNING: Supabase URL or Anon Key is missing from .env!");
-  }
+  // Lazy Initialize Supabase Client
+  let supabaseClient: any = null;
 
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  function getSupabase() {
+    if (!supabaseClient) {
+      const url = process.env.SUPABASE_URL;
+      const key = process.env.SUPABASE_ANON_KEY;
+      
+      if (!url || !key) {
+        throw new Error("Variables d'environnement de la base de données (SUPABASE_URL / SUPABASE_ANON_KEY) manquantes ou non transmises au serveur de production.");
+      }
+      
+      try {
+        supabaseClient = createClient(url, key);
+      } catch (err: any) {
+        throw new Error("Échec d'initialisation du client Supabase: " + err.message);
+      }
+    }
+    return supabaseClient;
+  }
 
   // API endpoint for contact submission
   app.post("/api/contact", async (req, res) => {
@@ -31,6 +42,28 @@ async function startServer() {
       }
 
       console.log("Reçu de soumission de contact:", { name, email, phone, company, service });
+
+      let supabase;
+      try {
+        supabase = getSupabase();
+      } catch (envError: any) {
+        console.error("Erreur d'initialisation de la base de données:", envError.message);
+        return res.status(500).json({
+          success: false,
+          error: "La base de données de production n'est pas encore configurée ou accessible par le module d'intégration.",
+          details: envError.message,
+          sqlNeeded: `CREATE TABLE IF NOT EXISTS contacts (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text NOT NULL,
+  company text,
+  service text,
+  message text NOT NULL,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);`
+        });
+      }
 
       // Insert into Supabase table: 'contacts'
       const { data, error } = await supabase
@@ -101,6 +134,16 @@ async function startServer() {
   // Live GET endpoint to view recent submissions
   app.get("/api/contacts", async (req, res) => {
     try {
+      let supabase;
+      try {
+        supabase = getSupabase();
+      } catch (envError: any) {
+        return res.status(500).json({
+          error: "La base de données de production n'est pas encore configurée ou accessible par le module d’intégration.",
+          details: envError.message
+        });
+      }
+
       const { data, error } = await supabase
         .from("contacts")
         .select("*")
