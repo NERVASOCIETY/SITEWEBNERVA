@@ -22,10 +22,10 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 
-import mourtalaImg from '../assets/images/team_mourtala_1780702431838.png';
-import seidouImg from '../assets/images/team_seidou_1780702445537.png';
-import abdoulayeImg from '../assets/images/team_abdoulaye_1780702457981.png';
-import youKnowImg from '../assets/images/team_you_know_1780702470680.png';
+const mourtalaImg = `${import.meta.env.BASE_URL}talla.jpg`;
+const seidouImg = `${import.meta.env.BASE_URL}sei.jpg`;
+const abdoulayeImg = `${import.meta.env.BASE_URL}laye.jpg`;
+const youKnowImg = `${import.meta.env.BASE_URL}youknow.jpg`;
 
 interface AProposProps {
   onNavigate: (pageId: PageId) => void;
