@@ -456,15 +456,15 @@ export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
                         {member.avatarLetters}
                       </div>
                     )}
-
-                    {/* Highly-styled cyber HUD floating badge/tag */}
-                    <span className="absolute top-3 right-3 bg-[#050e24]/90 text-cyan-400 text-[8px] font-mono font-extrabold tracking-widest uppercase px-2.5 py-1 rounded border border-cyan-500/30 shadow-[0_2px_8px_rgba(0,0,0,0.8)] z-20">
-                      {member.tag}
-                    </span>
                   </div>
 
-                  {/* Header identity */}
-                  <div className="space-y-1 pt-1">
+                  {/* Header identity with high-tech badge above name */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex">
+                      <span className="bg-cyan-950/80 text-cyan-400 text-[8.5px] font-mono font-black tracking-widest uppercase px-2.5 py-1 rounded border border-cyan-500/30 shadow-[0_2px_8px_rgba(6,182,212,0.05)]">
+                        {member.tag}
+                      </span>
+                    </div>
                     <h3 className="font-extrabold text-white text-base group-hover:text-cyan-300 transition-colors uppercase tracking-tight">{member.name}</h3>
                     <p className="text-xs text-cyan-400 font-mono font-bold uppercase">{member.role}</p>
                   </div>
