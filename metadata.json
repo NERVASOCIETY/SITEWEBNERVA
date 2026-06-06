@@ -1,0 +1,6 @@
+{
+  "name": "NERVA - Services Informatiques & Digitalisation",
+  "description": "Solutions digitales innovantes et sur mesure au Sénégal : Création de sites web, Digitalisation des hôtels, Conception d'affiches, CV Professionnels et prestations informatiques.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
