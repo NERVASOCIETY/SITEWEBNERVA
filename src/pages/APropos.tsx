@@ -34,7 +34,6 @@ interface AProposProps {
 export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
   // Accordion state for FAQ
   const [openFAQ, setOpenFAQ] = useState<number | null>(0);
-  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   const teamData = [
     {
@@ -257,22 +256,12 @@ export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
                 <div className="flex justify-between items-start">
                   
                   {/* High Quality Portrait Avatar/Fallback Concept */}
-                  {member.image && !imageErrors[idx] ? (
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      referrerPolicy="no-referrer"
-                      onError={() => {
-                        console.warn(`Failed to load image for ${member.name}, falling back to avatar letters.`);
-                        setImageErrors(prev => ({ ...prev, [idx]: true }));
-                      }}
-                      className="w-24 h-24 rounded-full object-cover border-2 border-[#00A3E0] bg-[#07152B] shrink-0 group-hover:scale-105 transition-transform shadow-md"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-[#07152B] text-[#00A3E0] font-sans font-bold text-2xl flex items-center justify-center border-2 border-[#00A3E0] shrink-0 group-hover:scale-105 transition-transform">
-                      {member.avatarLetters}
-                    </div>
-                  )}
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    referrerPolicy="no-referrer"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-[#00A3E0] bg-[#07152B] shrink-0 group-hover:scale-105 transition-transform shadow-md"
+                  />
 
                   <span className="bg-slate-100 text-slate-800 text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-0.5 rounded-full border border-slate-200">
                     {member.tag}
