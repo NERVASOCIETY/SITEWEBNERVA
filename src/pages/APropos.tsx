@@ -22,16 +22,10 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 
-const getImageUrl = (filename: string) => {
-  const base = import.meta.env.BASE_URL || '/';
-  const cleanBase = base.endsWith('/') ? base : `${base}/`;
-  return `${cleanBase}${filename}`;
-};
-
-const mourtalaImg = getImageUrl('talla.jpg');
-const seidouImg = getImageUrl('sei.jpg');
-const abdoulayeImg = getImageUrl('laye.jpg');
-const youKnowImg = getImageUrl('youknow.jpg');
+import mourtalaImg from '../assets/images/talla.jpg';
+import seidouImg from '../assets/images/sei.jpg';
+import abdoulayeImg from '../assets/images/laye.jpg';
+import youKnowImg from '../assets/images/youknow.jpg';
 
 interface AProposProps {
   onNavigate: (pageId: PageId) => void;
