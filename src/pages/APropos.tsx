@@ -22,10 +22,16 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 
-const mourtalaImg = `${import.meta.env.BASE_URL}talla.jpg`;
-const seidouImg = `${import.meta.env.BASE_URL}sei.jpg`;
-const abdoulayeImg = `${import.meta.env.BASE_URL}laye.jpg`;
-const youKnowImg = `${import.meta.env.BASE_URL}youknow.jpg`;
+const getImageUrl = (filename: string) => {
+  const base = import.meta.env.BASE_URL || '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  return `${cleanBase}${filename}`;
+};
+
+const mourtalaImg = getImageUrl('talla.jpg');
+const seidouImg = getImageUrl('sei.jpg');
+const abdoulayeImg = getImageUrl('laye.jpg');
+const youKnowImg = getImageUrl('youknow.jpg');
 
 interface AProposProps {
   onNavigate: (pageId: PageId) => void;
@@ -34,6 +40,7 @@ interface AProposProps {
 export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
   // Accordion state for FAQ
   const [openFAQ, setOpenFAQ] = useState<number | null>(0);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   const teamData = [
     {
@@ -256,11 +263,15 @@ export const APropos: React.FC<AProposProps> = ({ onNavigate }) => {
                 <div className="flex justify-between items-start">
                   
                   {/* High Quality Portrait Avatar/Fallback Concept */}
-                  {member.image ? (
+                  {member.image && !imageErrors[idx] ? (
                     <img 
                       src={member.image} 
                       alt={member.name} 
                       referrerPolicy="no-referrer"
+                      onError={() => {
+                        console.warn(`Failed to load image for ${member.name}, falling back to avatar letters.`);
+                        setImageErrors(prev => ({ ...prev, [idx]: true }));
+                      }}
                       className="w-24 h-24 rounded-full object-cover border-2 border-[#00A3E0] bg-[#07152B] shrink-0 group-hover:scale-105 transition-transform shadow-md"
                     />
                   ) : (
