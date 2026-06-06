@@ -26,7 +26,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <div className={`flex items-center select-none ${className}`}>
       {!imgError ? (
         <img
-          src="/logocmpl1.png"
+          src={`${import.meta.env.BASE_URL}logocmpl1.png`}
           alt="Nerva"
           referrerPolicy="no-referrer"
           className={`shrink-0 object-contain max-w-full ${animate ? 'hover:scale-[1.03] transition-transform duration-300' : ''}`}
