@@ -16,8 +16,8 @@ async function startServer() {
 
   function getSupabase() {
     if (!supabaseClient) {
-      const url = process.env.SUPABASE_URL;
-      const key = process.env.SUPABASE_ANON_KEY;
+      const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
       
       if (!url || !key) {
         throw new Error("Variables d'environnement de la base de données (SUPABASE_URL / SUPABASE_ANON_KEY) manquantes ou non transmises au serveur de production.");

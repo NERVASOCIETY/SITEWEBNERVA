@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { 
   Phone, 
   Mail, 
@@ -82,43 +83,107 @@ export const Contact: React.FC<ContactProps> = ({ selectedService, setSelectedSe
     setSqlNeeded(null);
     setIsCopied(false);
     
+    // Check if we are running in a static web hosting environment (like GitHub Pages) without a functioning Express backend
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      let useDirectClient = isGitHubPages;
+      
+      // Look for public client-side env variables configured in Vite
+      const publicSbUrl = import.meta.env.VITE_SUPABASE_URL || '';
+      const publicSbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      
+      if (!useDirectClient) {
+        try {
+          const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
 
-      const result = await response.json();
+          // If GitHub Pages or similar static hosting, this route will yield a 404 HTML, or network error.
+          const contentType = response.headers.get('content-type') || '';
+          if (response.status === 404 || !contentType.includes('application/json')) {
+            if (publicSbUrl && publicSbKey) {
+              useDirectClient = true;
+            } else {
+              throw new Error("Le serveur d'API (/api/contact) est introuvable (route non démarrée ou hébergement statique type GitHub Pages détecté). Veuillez renseigner VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY pour permettre l'envoi direct.");
+            }
+          } else {
+            const result = await response.json();
 
-      if (!response.ok || result.success === false) {
-        setErrorMessage(result.error || "Une erreur s'est produite lors de l'envoi.");
-        if (result.sqlNeeded) {
-          setSqlNeeded(result.sqlNeeded);
+            if (!response.ok || result.success === false) {
+              setErrorMessage(result.error || "Une erreur s'est produite lors de l'envoi.");
+              if (result.sqlNeeded) {
+                setSqlNeeded(result.sqlNeeded);
+              }
+              setIsSubmitting(false);
+              return;
+            }
+
+            // Successful submission via backend route API
+            onSuccess();
+            return;
+          }
+        } catch (fetchError: any) {
+          // Fallback if the fetch fails completely (example: server offline or network failure)
+          if (publicSbUrl && publicSbKey) {
+            useDirectClient = true;
+          } else {
+            throw fetchError;
+          }
         }
-        setIsSubmitting(false);
+      }
+
+      if (useDirectClient) {
+        if (!publicSbUrl || !publicSbKey) {
+          throw new Error("Pour transmettre des formulaires en direct depuis un hébergement statique (comme GitHub Pages), vous devez configurer les variables d'environnement VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.");
+        }
+
+        const supabase = createClient(publicSbUrl, publicSbKey);
+        const { error: insertError } = await supabase
+          .from('contacts')
+          .insert([
+            {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              company: formData.company,
+              service: formData.service,
+              message: formData.message,
+            }
+          ]);
+
+        if (insertError) {
+          throw new Error(`Échec de communication directe avec Supabase : ${insertError.message}`);
+        }
+
+        onSuccess();
         return;
       }
 
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        service: selectedService,
-        message: ''
-      });
-      localStorage.removeItem('nerva_contact_form');
     } catch (error: any) {
       console.error(error);
       setIsSubmitting(false);
-      setErrorMessage("Impossible de joindre le serveur. Veuillez vérifier votre connexion réseau.");
+      setErrorMessage(error.message || "Impossible de joindre le serveur. Veuillez vérifier votre connexion réseau.");
     }
+  };
+
+  const onSuccess = () => {
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+    // Reset form
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      service: selectedService,
+      message: ''
+    });
+    localStorage.removeItem('nerva_contact_form');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
